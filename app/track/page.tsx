@@ -49,16 +49,20 @@ function TrackContent() {
 
     try {
       const supabase = createClient()
+      
+      // Use secure tracking function instead of direct table query
       const { data, error: fetchError } = await supabase
-        .from('incidents')
-        .select('id, reference_number, category, severity, title, description, address_text, status, created_at, updated_at')
-        .eq('reference_number', ref.trim())
-        .single()
+        .rpc('track_incident_by_reference', { ref_num: ref.trim() })
 
-      if (fetchError || !data) {
+      if (fetchError || !data || data.length === 0) {
         setError('Report not found. Please check your reference number.')
       } else {
-        setIncident(data)
+        // RPC returns array, take first result
+        const incident = Array.isArray(data) ? data[0] : data
+        setIncident({
+          id: '', // Not exposed by tracking function
+          ...incident
+        })
       }
     } catch (err) {
       setError('An error occurred. Please try again.')

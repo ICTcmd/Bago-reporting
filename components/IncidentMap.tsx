@@ -103,12 +103,13 @@ export default function IncidentMap({ incidents, center = [10.5380, 122.8424], z
                   </span>
                 </div>
                 <h3 className="font-bold text-sm mb-1">{incident.title}</h3>
-                <p className="text-xs text-gray-600 mb-2">{incident.description}</p>
+                <p className="text-xs text-gray-600 mb-2 line-clamp-2">{incident.description}</p>
                 <p className="text-xs text-gray-500 mb-2">📍 {incident.address_text}</p>
                 <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
                   <span className="font-mono">{incident.reference_number}</span>
                   <span>{new Date(incident.created_at).toLocaleDateString()}</span>
                 </div>
+                {/* Note: Reporter contact info NOT displayed for privacy */}
               </div>
             </Popup>
           </Marker>
