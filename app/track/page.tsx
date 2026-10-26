@@ -8,16 +8,16 @@ import { createClient } from '@/lib/supabase/client'
 import { getStatusLabel, getStatusColor, getIncidentCategoryLabel, formatDate } from '@/lib/utils'
 
 interface Incident {
-  id: string
   reference_number: string
   category: string
   severity: string
   title: string
-  description: string
-  address_text: string
+  location_summary: string  // Changed from address_text (barangay only for privacy)
   status: string
   created_at: string
   updated_at: string
+  // Note: description removed for privacy (may contain PII)
+  // Note: id not exposed by tracking function
 }
 
 function TrackContent() {
@@ -58,11 +58,7 @@ function TrackContent() {
         setError('Report not found. Please check your reference number.')
       } else {
         // RPC returns array, take first result
-        const incident = Array.isArray(data) ? data[0] : data
-        setIncident({
-          id: '', // Not exposed by tracking function
-          ...incident
-        })
+        setIncident(Array.isArray(data) ? data[0] : data)
       }
     } catch (err) {
       setError('An error occurred. Please try again.')
@@ -172,16 +168,14 @@ function TrackContent() {
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Description</p>
-                  <p className="text-gray-900">{incident.description}</p>
-                </div>
-
-                <div>
                   <p className="text-sm text-gray-600 mb-1 flex items-center">
                     <MapPin className="h-4 w-4 mr-1" />
                     Location
                   </p>
-                  <p className="text-gray-900">{incident.address_text}</p>
+                  <p className="text-gray-900">{incident.location_summary}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Exact address withheld for privacy
+                  </p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">

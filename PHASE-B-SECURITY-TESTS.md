@@ -151,6 +151,37 @@ SELECT * FROM incidents LIMIT 5;
 
 ---
 
+### Test 1.5: Authenticated Non-Staff Cannot Query Function 🆕
+**Purpose:** Verify authenticated citizens have same restrictions as anonymous
+
+**SQL Test:**
+```sql
+-- This test must be run with authenticated citizen JWT token
+-- Login as citizen user in application, then test via DevTools:
+const { data, error } = await supabase.rpc('track_incident_by_reference', { 
+  ref_num: 'BS-6720A73A-D4B3' 
+})
+console.log('Data:', data)
+console.log('Error:', error)
+-- EXPECTED: Either permission denied OR same behavior as anonymous
+```
+
+**Alternative Test (Via Application):**
+1. Create citizen account (role='citizen')
+2. Login as citizen
+3. Open DevTools Console
+4. Try to call tracking function directly
+5. EXPECTED: Function either:
+   - Returns error (permission denied), OR
+   - Works same as anonymous (safe fields only)
+
+**Pass Criteria:** 
+- Authenticated citizens cannot enumerate incidents
+- Function grants are properly restricted
+- No privileged access for non-staff authenticated users
+
+---
+
 ## TEST SUITE 2: AUDIT LOGGING VERIFICATION
 
 ### Test 2.1: Status Changes Are Logged
@@ -259,6 +290,66 @@ SELECT COUNT(*) FROM audit_logs;
 
 ---
 
+### Test 2.5: Single Audit Entry for Multi-Field Update 🆕
+**Purpose:** Verify no duplicate audit logs when both status and assignment change
+
+**SQL Test:**
+```sql
+-- Create test incident or use existing one
+-- Note the incident ID for verification
+
+-- Update both status AND assignment in single UPDATE
+UPDATE incidents 
+SET 
+  status = 'verified', 
+  assigned_to = 'staff-user-uuid-here'
+WHERE reference_number = 'TEST-REF-NUMBER'
+RETURNING id;
+
+-- Wait 1 second for trigger to complete
+
+-- Check audit_logs - should be ONLY 1 entry
+SELECT 
+  COUNT(*) as entry_count,
+  action,
+  details
+FROM audit_logs
+WHERE resource_id = 'incident-id-from-above'
+AND created_at > NOW() - INTERVAL '10 seconds'
+GROUP BY action, details;
+
+-- EXPECTED: 
+-- entry_count = 1 (NOT 2)
+-- action = 'incident_updated'
+-- details should contain BOTH status and assigned_to changes
+```
+
+**Verification Details JSON:**
+```json
+{
+  "reference_number": "TEST-REF",
+  "changes": {
+    "status": {
+      "old": "submitted",
+      "new": "verified"
+    },
+    "assigned_to": {
+      "old": null,
+      "new": "staff-uuid"
+    }
+  },
+  "actor_role": "supervisor"
+}
+```
+
+**Pass Criteria:** 
+- Only 1 audit entry created (not 2)
+- Single entry contains ALL changes
+- Changes JSON shows both fields
+- No duplicate or misleading log entries
+
+---
+
 ## TEST SUITE 3: STORAGE SECURITY
 
 ### Test 3.1: Anonymous Users Cannot View Incident Media
@@ -288,7 +379,92 @@ SELECT COUNT(*) FROM audit_logs;
 
 ## TEST SUITE 4: PRIVACY VERIFICATION
 
-### Test 4.1: Map Popups Don't Expose PII
+### Test 4.1: Description Not Exposed in Tracking 🆕
+**Purpose:** Verify tracking function does NOT return description field (may contain PII)
+
+**SQL Test:**
+```sql
+-- Insert test incident with PII in description
+INSERT INTO incidents (
+  category, severity, title, description, address_text, barangay,
+  reporter_name, reporter_contact
+) VALUES (
+  'crime', 'medium',
+  'Test Incident',
+  'Please call me at 0917-123-4567, my name is Maria Cruz', -- PII
+  '123 Rizal Street',
+  'Poblacion',
+  'Test Reporter',
+  '0917-000-0000'
+) RETURNING reference_number;
+
+-- Note the reference number
+
+-- Query via tracking function
+SELECT * FROM track_incident_by_reference('REF-NUMBER-HERE');
+
+-- EXPECTED FIELDS RETURNED:
+-- ✅ reference_number
+-- ✅ status
+-- ✅ category
+-- ✅ severity
+-- ✅ title
+-- ✅ location_summary (barangay only)
+-- ✅ created_at
+-- ✅ updated_at
+
+-- EXPECTED FIELDS NOT RETURNED:
+-- ❌ description (contains PII)
+-- ❌ address_text (exact address)
+-- ❌ reporter_name
+-- ❌ reporter_contact
+-- ❌ id
+```
+
+**Application Test:**
+1. Go to /track page (not logged in)
+2. Enter test incident reference number
+3. Open DevTools > Network tab
+4. Inspect RPC response
+5. Verify "description" field is NOT in response
+
+**Pass Criteria:** 
+- Description field completely absent from response
+- No way to retrieve description via public function
+- Staff can still see description in dashboard
+
+---
+
+### Test 4.2: Exact Address Not Exposed 🆕
+**Purpose:** Verify tracking function returns only barangay, not exact address
+
+**SQL Test:**
+```sql
+-- Use incident with specific address
+SELECT * FROM track_incident_by_reference('VALID-REF-NUMBER');
+
+-- Check location_summary field
+-- EXPECTED FORMAT: "Barangay Poblacion" or "Barangay Balingasag"
+-- NOT EXPECTED: "123 Rizal Street, corner Bonifacio Ave, Poblacion"
+```
+
+**Application Test:**
+1. Submit incident with detailed address:
+   - Address: "123 Rizal Street, corner Bonifacio Avenue, near SM Mall"
+   - Barangay: "Poblacion"
+2. Note reference number
+3. Track incident on /track page
+4. Verify location shows: "Barangay Poblacion" (generic)
+5. Verify location does NOT show: exact street address
+
+**Pass Criteria:**
+- Only barangay-level location shown
+- Exact street address not exposed
+- Cannot identify reporter's precise location
+
+---
+
+### Test 4.3: Map Popups Don't Expose PII
 **Purpose:** Verify map markers don't leak private info
 
 **Test Steps:**
@@ -305,7 +481,7 @@ SELECT COUNT(*) FROM audit_logs;
 
 ---
 
-### Test 4.2: Track Page Doesn't Expose PII
+### Test 4.4: Track Page Doesn't Expose PII
 **Purpose:** Verify public tracking page is safe
 
 **Test Steps:**
@@ -313,11 +489,13 @@ SELECT COUNT(*) FROM audit_logs;
 2. Enter valid reference number
 3. Inspect returned data (DevTools Network tab)
 4. Verify DOES NOT contain:
+   - description (may have PII)
    - reporter_name
    - reporter_contact
    - location_lat/lng
    - assigned_to
    - internal incident ID
+   - exact address_text
 
 **Pass Criteria:** Only public-safe fields visible
 
@@ -430,21 +608,27 @@ SELECT * FROM track_incident_by_reference('BS-123'') UNION SELECT * FROM profile
 
 ## TEST EXECUTION CHECKLIST
 
+**Total Tests: 25** (21 original + 4 new)
+- Test 1.5: Authenticated non-staff cannot query function 🆕
+- Test 2.5: Single audit entry for multi-field update 🆕
+- Test 4.1: Description not exposed in tracking 🆕
+- Test 4.2: Exact address not exposed 🆕
+
 ### Pre-Migration (Staging)
 - [ ] Backup staging database
 - [ ] Run all Test Suite 1 queries (should fail appropriately)
 - [ ] Verify current functionality works
 
 ### Post-Migration (Staging)
-- [ ] Apply migration SQL
+- [ ] Apply migration SQL (002_security_remediation_v2.sql)
 - [ ] Verify migration success (no errors)
-- [ ] Run TEST SUITE 1: RLS Policies (all tests)
-- [ ] Run TEST SUITE 2: Audit Logging (all tests)
-- [ ] Run TEST SUITE 3: Storage Security (all tests)
-- [ ] Run TEST SUITE 4: Privacy (all tests)
-- [ ] Run TEST SUITE 5: Submission (all tests)
-- [ ] Run TEST SUITE 6: Regression (all tests)
-- [ ] Run TEST SUITE 7: Edge Cases (all tests)
+- [ ] Run TEST SUITE 1: RLS Policies (5 tests including new 1.5)
+- [ ] Run TEST SUITE 2: Audit Logging (5 tests including new 2.5)
+- [ ] Run TEST SUITE 3: Storage Security (2 tests)
+- [ ] Run TEST SUITE 4: Privacy (4 tests including new 4.1 and 4.2)
+- [ ] Run TEST SUITE 5: Submission (2 tests)
+- [ ] Run TEST SUITE 6: Regression (2 tests)
+- [ ] Run TEST SUITE 7: Edge Cases (2 tests)
 
 ### Pre-Production
 - [ ] All staging tests passed

@@ -1,3 +1,9 @@
+-- ⚠️⚠️⚠️ DEPRECATED - DO NOT USE ⚠️⚠️⚠️
+-- This migration contains 6 security vulnerabilities identified during review
+-- USE: 002_security_remediation_v2.sql instead
+-- See: PHASE-B-FINAL-SECURITY-REVIEW.md for vulnerability details
+-- ⚠️⚠️⚠️ DEPRECATED - DO NOT USE ⚠️⚠️⚠️
+
 -- BAGO SAFE - PHASE B: SECURITY REMEDIATION MIGRATION
 -- Date: 2026-10-23
 -- Purpose: Fix RLS policies, implement audit logging, improve data privacy
