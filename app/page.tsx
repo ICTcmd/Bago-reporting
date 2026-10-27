@@ -47,7 +47,7 @@ export default function HomePage() {
             </p>
           </div>
           <p className="text-center text-sm mt-2 font-medium">
-            For life-threatening emergencies, call <strong className="text-xl">911</strong> or Bago City DRRMO immediately.
+            For life-threatening emergencies, call <strong className="text-xl">911</strong> or Bago City CDRRMC at <strong className="text-lg">(034) 473-0043</strong> immediately.
           </p>
         </div>
       </div>
@@ -158,18 +158,21 @@ export default function HomePage() {
               <p className="text-4xl font-extrabold text-red-600">911</p>
             </div>
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border-2 border-blue-200">
-              <p className="text-sm text-blue-700 font-semibold mb-2">Bago City DRRMO</p>
-              <p className="text-2xl font-bold text-blue-600">+63-xxx-xxx-xxxx</p>
+              <p className="text-sm text-blue-700 font-semibold mb-2">Bago City CDRRMC (24/7)</p>
+              <p className="text-2xl font-bold text-blue-600">(034) 473-0043</p>
+              <p className="text-lg font-semibold text-blue-600 mt-1">0933-693-6444</p>
             </div>
             <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border-2 border-green-200">
               <p className="text-sm text-green-700 font-semibold mb-2">Office Hours</p>
               <p className="font-bold text-gray-900">Monday - Friday</p>
               <p className="text-lg font-semibold text-green-600">8:00 AM - 5:00 PM</p>
+              <p className="text-sm text-green-700 mt-2">(034) 431-5085</p>
             </div>
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border-2 border-purple-200">
               <p className="text-sm text-purple-700 font-semibold mb-2">Location</p>
               <p className="font-bold text-gray-900">Bago City Hall</p>
               <p className="text-sm text-purple-600">Negros Occidental</p>
+              <p className="text-sm text-purple-700 mt-2">bagodrrm@gmail.com</p>
             </div>
           </div>
         </div>
