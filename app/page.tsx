@@ -21,6 +21,13 @@ export default function HomePage() {
             </div>
             <nav className="flex items-center space-x-3">
               <Link
+                href="/emergency-map"
+                className="text-gray-700 hover:text-red-600 font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-red-50 flex items-center gap-2"
+              >
+                <span className="text-lg">🗺️</span>
+                <span className="hidden sm:inline">Emergency Map</span>
+              </Link>
+              <Link
                 href="/track"
                 className="text-gray-700 hover:text-blue-600 font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-blue-50"
               >
