@@ -16,8 +16,8 @@ export interface EmergencyLocation {
   color: string
 }
 
-// Bago City center: Updated with exact GPS coordinates from Google Maps
-// Last updated: October 26, 2026
+// Bago City emergency services - Updated with exact GPS coordinates
+// Last updated: October 26, 2026 - Verified coordinates from actual locations
 
 export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
   // FIRE STATIONS
@@ -25,7 +25,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'fire-main',
     name: 'Fire Station Bago City',
     category: 'fire',
-    coordinates: [10.536528, 122.837639], // Exact location from Google Maps
+    coordinates: [10.525734745570166, 122.8411452237024], // Exact verified location
     address: 'Gen. Luna St, Bago City, Negros Occidental',
     barangay: 'Poblacion',
     phones: ['(034) 445-8332', '0939-424-8377'],
@@ -39,7 +39,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'fire-maao',
     name: 'Ma-ao Fire Sub-Station',
     category: 'fire',
-    coordinates: [10.561944, 122.863611], // Exact location from Google Maps
+    coordinates: [10.489772932629569, 122.99136147952082], // Exact verified location
     address: 'Ma-ao, Bago City, Negros Occidental',
     barangay: 'Ma-ao',
     phones: ['0981-558-3788', '0975-436-5606'],
@@ -55,7 +55,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'police-maao',
     name: 'Ma-ao Police Station',
     category: 'police',
-    coordinates: [10.560833, 122.863333], // Exact location from Google Maps
+    coordinates: [10.48931228331526, 122.98851026602978], // Exact verified location
     address: 'Ma-ao, Bago City, Negros Occidental',
     barangay: 'Ma-ao',
     phones: ['0929-821-5539'],
@@ -68,7 +68,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'police-dulao',
     name: 'Dulao Police Mobile Force (PNP)',
     category: 'police',
-    coordinates: [10.534722, 122.852778], // Exact location from Google Maps
+    coordinates: [10.557834961618639, 122.96073286973855], // Exact verified location
     address: 'Dulao, Bago City, Negros Occidental',
     barangay: 'Dulao',
     phones: ['(034) 471-1660'],
@@ -84,7 +84,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'city-hospital',
     name: 'Bago City Hospital',
     category: 'hospital',
-    coordinates: [10.543056, 122.836389], // Exact location from Google Maps
+    coordinates: [10.535692752952805, 122.8469470832295], // Exact verified location
     address: 'Barangay Road, Bago City, Negros Occidental',
     barangay: 'Poblacion',
     phones: ['(034) 435-1690'],
@@ -98,7 +98,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'health-office',
     name: 'City Health Office of Bago',
     category: 'hospital',
-    coordinates: [10.536111, 122.837222], // Exact location from Google Maps
+    coordinates: [10.538412130030794, 122.83504136602994], // Exact verified location
     address: 'General Luna St, Bago City, Negros Occidental',
     barangay: 'Poblacion',
     phones: ['(034) 447-8181 loc. 246', '0967-632-5766'],
@@ -114,7 +114,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'maao-rescue',
     name: 'Ma-ao Volunteers Rescue Unit (MAVRU Team)',
     category: 'rescue',
-    coordinates: [10.560556, 122.863889], // Exact location from Google Maps
+    coordinates: [10.489726634510882, 122.9913204409019], // Exact verified location
     address: 'Ma-ao, Bago City, Negros Occidental',
     barangay: 'Ma-ao',
     phones: ['0966-579-6001'],
@@ -129,7 +129,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'cdrrmc',
     name: 'Bago CDRRMC Control Center',
     category: 'government',
-    coordinates: [10.536389, 122.837500], // Exact location from Google Maps
+    coordinates: [10.530100904561998, 122.84219605253882], // Exact verified location
     address: 'Bago City Hall Compound, General Luna St, Bago City',
     barangay: 'Poblacion',
     phones: ['(034) 473-0043', '0933-693-6444', '0927-022-4884', '(034) 431-5085'],
@@ -143,7 +143,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'cswdo',
     name: 'CSWDO Bago City',
     category: 'government',
-    coordinates: [10.536667, 122.837778], // Exact location from Google Maps
+    coordinates: [10.53910639010037, 122.83476655253895], // Exact verified location
     address: 'General Luna St, Bago City, Negros Occidental',
     barangay: 'Poblacion',
     phones: ['(034) 447-8181 loc. 236'],
@@ -157,7 +157,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'vet-office',
     name: 'City Veterinary Office of Bago',
     category: 'government',
-    coordinates: [10.537222, 122.838056], // Exact location from Google Maps
+    coordinates: [10.517909659605372, 122.83722481856813], // Exact verified location
     address: 'Bago City, Negros Occidental',
     barangay: 'Poblacion',
     phones: ['(034) 454-2315'],
@@ -171,7 +171,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'environment-office',
     name: 'City Environment Management Office',
     category: 'government',
-    coordinates: [10.536944, 122.837361], // Exact location from Google Maps
+    coordinates: [10.539406054981484, 122.83454569672045], // Exact verified location
     address: 'Bago City Hall, General Luna St, Bago City',
     barangay: 'Poblacion',
     phones: ['(034) 447-8181 loc. 234'],
@@ -185,7 +185,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'tourism-office',
     name: "Bago City Tourism's Office",
     category: 'government',
-    coordinates: [10.536806, 122.837472], // Exact location from Google Maps
+    coordinates: [10.538384855542139, 122.83175881021161], // Exact verified location
     address: 'Bago City Hall, General Luna St, Bago City',
     barangay: 'Poblacion',
     phones: ['(034) 703-8619'],
@@ -199,7 +199,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'bago-college',
     name: 'Bago City College',
     category: 'government',
-    coordinates: [10.528611, 122.838056], // Exact location from Google Maps
+    coordinates: [10.530999715215351, 122.84340659486637], // Exact verified location
     address: 'Rizal Ave, Bago City, Negros Occidental',
     barangay: 'Barangay 3',
     phones: ['(034) 461-0963', '(034) 461-1038'],
