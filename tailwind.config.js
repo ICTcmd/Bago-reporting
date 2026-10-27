@@ -8,6 +8,33 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Professional government palette
+        navy: {
+          DEFAULT: '#0A2E5C',
+          50: '#E6EBF2',
+          100: '#CCD6E5',
+          600: '#0A2E5C',
+          700: '#082647',
+          800: '#061E35',
+          900: '#041624',
+        },
+        action: {
+          DEFAULT: '#2563EB',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          500: '#3B82F6',
+          600: '#2563EB',
+          700: '#1D4ED8',
+        },
+        emergency: {
+          DEFAULT: '#DC2626',
+          50: '#FEF2F2',
+          100: '#FEE2E2',
+          600: '#DC2626',
+          700: '#B91C1C',
+        },
+        page: '#F8FAFC',
+        // Keep existing semantic colors for compatibility
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
