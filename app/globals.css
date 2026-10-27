@@ -73,3 +73,24 @@
 .leaflet-popup-content-wrapper {
   border-radius: 0.5rem;
 }
+
+/* Marker cluster styles */
+.custom-cluster-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-cluster {
+  background: transparent !important;
+}
+
+.marker-cluster div {
+  background: transparent !important;
+}
+
+/* Custom marker styles */
+.custom-marker {
+  background: transparent;
+  border: none;
+}

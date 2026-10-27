@@ -1,6 +1,7 @@
 'use client'
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -73,6 +74,60 @@ const createCustomIcon = (severity: string) => {
 }
 
 export default function IncidentMap({ incidents, center = [10.5380, 122.8424], zoom = 13 }: IncidentMapProps) {
+  // Create custom cluster icon based on severity of incidents in cluster
+  const createClusterCustomIcon = (cluster: any) => {
+    const markers = cluster.getAllChildMarkers()
+    const severityCounts = {
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0
+    }
+    
+    // Count severities in cluster
+    markers.forEach((marker: any) => {
+      const severity = marker.options.severity
+      if (severity && severityCounts[severity as keyof typeof severityCounts] !== undefined) {
+        severityCounts[severity as keyof typeof severityCounts]++
+      }
+    })
+    
+    // Determine cluster color (highest severity wins)
+    let color = '#6b7280' // default gray
+    if (severityCounts.critical > 0) {
+      color = '#dc2626' // red
+    } else if (severityCounts.high > 0) {
+      color = '#ea580c' // orange
+    } else if (severityCounts.medium > 0) {
+      color = '#f59e0b' // yellow
+    } else if (severityCounts.low > 0) {
+      color = '#3b82f6' // blue
+    }
+    
+    const count = markers.length
+    
+    return L.divIcon({
+      html: `
+        <div style="
+          background-color: ${color};
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 14px;
+          border: 3px solid white;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+        ">${count}</div>
+      `,
+      className: 'custom-cluster-icon',
+      iconSize: L.point(40, 40, true)
+    })
+  }
+  
   return (
     <div className="h-full w-full relative">
       <MapContainer
@@ -86,34 +141,44 @@ export default function IncidentMap({ incidents, center = [10.5380, 122.8424], z
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {incidents.map((incident) => (
-          <Marker
-            key={incident.id}
-            position={[incident.location_lat, incident.location_lng]}
-            icon={createCustomIcon(incident.severity)}
-          >
-            <Popup>
-              <div className="p-2 min-w-[200px]">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-gray-200 uppercase">
-                    {incident.severity}
-                  </span>
-                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-blue-200 uppercase">
-                    {incident.status.replace('_', ' ')}
-                  </span>
+        <MarkerClusterGroup
+          chunkedLoading
+          iconCreateFunction={createClusterCustomIcon}
+          maxClusterRadius={50}
+          spiderfyOnMaxZoom={true}
+          showCoverageOnHover={false}
+          zoomToBoundsOnClick={true}
+        >
+          {incidents.map((incident) => (
+            <Marker
+              key={incident.id}
+              position={[incident.location_lat, incident.location_lng]}
+              icon={createCustomIcon(incident.severity)}
+              severity={incident.severity}
+            >
+              <Popup>
+                <div className="p-2 min-w-[200px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-0.5 text-xs font-bold rounded bg-gray-200 uppercase">
+                      {incident.severity}
+                    </span>
+                    <span className="px-2 py-0.5 text-xs font-bold rounded bg-blue-200 uppercase">
+                      {incident.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-sm mb-1">{incident.title}</h3>
+                  <p className="text-xs text-gray-600 mb-2 line-clamp-2">{incident.description}</p>
+                  <p className="text-xs text-gray-500 mb-2">📍 {incident.address_text}</p>
+                  <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
+                    <span className="font-mono">{incident.reference_number}</span>
+                    <span>{new Date(incident.created_at).toLocaleDateString()}</span>
+                  </div>
+                  {/* Note: Reporter contact info NOT displayed for privacy */}
                 </div>
-                <h3 className="font-bold text-sm mb-1">{incident.title}</h3>
-                <p className="text-xs text-gray-600 mb-2 line-clamp-2">{incident.description}</p>
-                <p className="text-xs text-gray-500 mb-2">📍 {incident.address_text}</p>
-                <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
-                  <span className="font-mono">{incident.reference_number}</span>
-                  <span>{new Date(incident.created_at).toLocaleDateString()}</span>
-                </div>
-                {/* Note: Reporter contact info NOT displayed for privacy */}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          ))}
+        </MarkerClusterGroup>
       </MapContainer>
       
       {/* Legend */}
