@@ -40,25 +40,25 @@ export default function EmergencyMapPage() {
   const totalLocations = EMERGENCY_LOCATIONS.length
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-page">
       {/* Header */}
-      <header className="bg-white shadow-md border-b sticky top-0 z-50">
+      <header className="bg-navy-600 shadow-md border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-br from-blue-600 to-cyan-500 p-2 rounded-xl shadow-lg">
-                <Shield className="h-6 w-6 text-white" />
+              <div className="bg-white p-2 rounded-lg">
+                <Shield className="h-6 w-6 text-navy-600" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
+                <h1 className="text-xl font-bold text-white">
                   Bago Safe
                 </h1>
-                <p className="text-xs text-gray-600">Emergency Services Map</p>
+                <p className="text-xs text-white/80">Emergency Services Map</p>
               </div>
             </div>
             <Link
               href="/"
-              className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-blue-50"
+              className="flex items-center gap-2 text-white/90 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-white/10 min-h-[44px]"
             >
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Home</span>
@@ -81,16 +81,16 @@ export default function EmergencyMapPage() {
         </div>
 
         {/* Filter Bar */}
-        <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+        <div className="card-surface p-4 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-action-50 hover:bg-action-100 text-action-700 font-semibold px-4 py-2 rounded-lg transition-colors min-h-[44px]"
             >
               <Filter className="h-4 w-4" />
               <span>Filter Services</span>
               {selectedCategories.length < LOCATION_CATEGORIES.length && (
-                <span className="bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="bg-action-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {LOCATION_CATEGORIES.length - selectedCategories.length}
                 </span>
               )}
@@ -114,17 +114,17 @@ export default function EmergencyMapPage() {
                 return (
                   <label
                     key={category.value}
-                    className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all min-h-[44px] ${
                       isSelected
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
+                        ? 'border-action-600 bg-action-50'
+                        : 'border-gray-300 bg-white hover:border-gray-400'
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleCategoryToggle(category.value)}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-action-600 rounded focus:ring-action-500"
                     />
                     <span className="text-lg">{category.icon}</span>
                     <span className="text-sm font-medium text-gray-700 capitalize">
@@ -138,7 +138,7 @@ export default function EmergencyMapPage() {
         </div>
 
         {/* Map Container */}
-        <div className="bg-white rounded-2xl shadow-2xl p-4 mb-8">
+        <div className="card-surface p-4 mb-8">
           <EmergencyServicesMap 
             selectedCategories={selectedCategories}
             height="600px"
@@ -146,14 +146,14 @@ export default function EmergencyMapPage() {
         </div>
 
         {/* Emergency Services List */}
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl shadow-xl p-6 mb-8">
+        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Phone className="h-6 w-6 text-red-600" />
             <h3 className="text-2xl font-bold text-gray-900">24/7 Emergency Hotlines</h3>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             {emergencyServices.map((service) => (
-              <div key={service.id} className="bg-white rounded-xl p-4 shadow-md">
+              <div key={service.id} className="bg-white rounded-xl p-4 shadow-sm border border-red-200">
                 <div className="flex items-start gap-3">
                   <div
                     className="text-2xl flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center"
@@ -168,7 +168,7 @@ export default function EmergencyMapPage() {
                         <a
                           key={idx}
                           href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
-                          className="block text-blue-600 hover:text-blue-800 font-semibold hover:underline text-sm"
+                          className="block text-action-600 hover:text-action-700 font-semibold hover:underline text-sm min-h-[44px] flex items-center"
                         >
                           📞 {phone}
                         </a>
@@ -182,11 +182,11 @@ export default function EmergencyMapPage() {
         </div>
 
         {/* Important Notice */}
-        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 text-center">
-          <p className="text-yellow-800 font-semibold mb-2">
+        <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6 text-center">
+          <p className="text-yellow-900 font-semibold mb-2">
             ⚠️ For Life-Threatening Emergencies
           </p>
-          <p className="text-yellow-700">
+          <p className="text-yellow-800">
             Call <strong className="text-2xl">911</strong> immediately or contact{' '}
             <strong>CDRRMC at (034) 473-0043</strong>
           </p>
@@ -194,18 +194,18 @@ export default function EmergencyMapPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-12 py-8">
+      <footer className="bg-navy-600 text-white mt-12 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center space-x-3 mb-3">
-            <div className="bg-gradient-to-br from-blue-600 to-cyan-500 p-2 rounded-lg">
-              <Shield className="h-5 w-5 text-white" />
+            <div className="bg-white p-2 rounded-lg">
+              <Shield className="h-5 w-5 text-navy-600" />
             </div>
             <h3 className="text-lg font-bold">Bago Safe</h3>
           </div>
-          <p className="text-gray-400 text-sm">
+          <p className="text-white/80 text-sm">
             © 2026 Bago City Disaster Risk Reduction and Management Office
           </p>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-white/60 mt-2">
             Emergency Services Map • Public Information
           </p>
         </div>

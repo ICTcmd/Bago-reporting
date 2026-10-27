@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, ArrowLeft, MapPin, Upload, X } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, MapPin, Upload, X, CheckCircle, Image as ImageIcon } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { generateReferenceNumber } from '@/lib/utils'
@@ -20,6 +20,10 @@ interface FormData {
   reporter_contact: string
 }
 
+interface FieldErrors {
+  [key: string]: string
+}
+
 const INCIDENT_CATEGORIES = [
   { value: 'flood', label: 'Flooding', emoji: '🌊' },
   { value: 'fire', label: 'Fire', emoji: '🔥' },
@@ -32,10 +36,10 @@ const INCIDENT_CATEGORIES = [
 ]
 
 const SEVERITY_LEVELS = [
-  { value: 'low', label: 'Low', color: 'green' },
-  { value: 'medium', label: 'Medium', color: 'yellow' },
-  { value: 'high', label: 'High', color: 'orange' },
-  { value: 'critical', label: 'Critical', color: 'red' },
+  { value: 'low', label: 'Low', color: 'bg-green-100 border-green-600 text-green-800' },
+  { value: 'medium', label: 'Medium', color: 'bg-yellow-100 border-yellow-600 text-yellow-800' },
+  { value: 'high', label: 'High', color: 'bg-orange-100 border-orange-600 text-orange-800' },
+  { value: 'critical', label: 'Critical', color: 'bg-red-100 border-red-600 text-red-800' },
 ]
 
 export default function ReportPage() {
@@ -53,65 +57,136 @@ export default function ReportPage() {
     reporter_contact: '',
   })
   const [photos, setPhotos] = useState<File[]>([])
+  const [photoPreview, setPhotoPreview] = useState<string[]>([])
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  const validateField = (name: string, value: any): string => {
+    switch (name) {
+      case 'title':
+        if (!value.trim()) return 'Title is required'
+        if (value.trim().length < 5) return 'Title must be at least 5 characters'
+        return ''
+      case 'description':
+        if (!value.trim()) return 'Description is required'
+        if (value.trim().length < 20) return 'Please provide more detail (at least 20 characters)'
+        return ''
+      case 'address_text':
+        if (!value.trim()) return 'Location is required'
+        return ''
+      case 'reporter_contact':
+        if (!value.trim()) return 'Contact information is required'
+        // Basic email or phone validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        const phoneRegex = /^[\d\s\-\+\(\)]+$/
+        if (!emailRegex.test(value) && !phoneRegex.test(value)) {
+          return 'Please enter a valid phone number or email'
+        }
+        return ''
+      default:
+        return ''
+    }
+  }
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    
+    // Clear error for this field if it was touched
+    if (touchedFields.has(name)) {
+      const error = validateField(name, value)
+      setFieldErrors(prev => {
+        const newErrors = { ...prev }
+        if (error) {
+          newErrors[name] = error
+        } else {
+          delete newErrors[name]
+        }
+        return newErrors
+      })
+    }
+  }
+
+  const handleBlur = (name: string, value: any) => {
+    setTouchedFields(prev => new Set(prev).add(name))
+    const error = validateField(name, value)
+    if (error) {
+      setFieldErrors(prev => ({ ...prev, [name]: error }))
+    } else {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[name]
+        return newErrors
+      })
+    }
   }
 
   const handlePhotoAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    const validFiles = files.filter((file) => {
+    const validFiles: File[] = []
+    const newPreviews: string[] = []
+
+    for (const file of files) {
       if (!file.type.startsWith('image/')) {
         alert(`${file.name} is not an image file`)
-        return false
+        continue
       }
       if (file.size > 5 * 1024 * 1024) {
         alert(`${file.name} is too large (max 5MB)`)
-        return false
+        continue
       }
-      return true
-    })
-
-    if (photos.length + validFiles.length > 3) {
-      alert('Maximum 3 photos allowed')
-      return
+      if (photos.length + validFiles.length >= 3) {
+        alert('Maximum 3 photos allowed')
+        break
+      }
+      
+      validFiles.push(file)
+      newPreviews.push(URL.createObjectURL(file))
     }
 
-    setPhotos((prev) => [...prev, ...validFiles].slice(0, 3))
+    setPhotos((prev) => [...prev, ...validFiles])
+    setPhotoPreview((prev) => [...prev, ...newPreviews])
+    
+    // Reset input
+    e.target.value = ''
   }
 
   const handlePhotoRemove = (index: number) => {
+    // Revoke object URL to prevent memory leak
+    URL.revokeObjectURL(photoPreview[index])
     setPhotos((prev) => prev.filter((_, i) => i !== index))
+    setPhotoPreview((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
-    // Validation
-    if (!formData.category) {
-      setError('Please select an incident category')
-      return
-    }
-    if (!formData.title.trim()) {
-      setError('Please provide a title')
-      return
-    }
-    if (!formData.description.trim()) {
-      setError('Please provide a description')
-      return
-    }
-    if (!formData.address_text.trim()) {
-      setError('Please provide a location')
-      return
-    }
-    if (!formData.reporter_contact.trim()) {
-      setError('Please provide a contact method (phone or email)')
+    // Mark all fields as touched
+    const allFields = new Set(['category', 'title', 'description', 'address_text', 'reporter_contact'])
+    setTouchedFields(allFields)
+
+    // Validate all fields
+    const errors: FieldErrors = {}
+    if (!formData.category) errors.category = 'Please select an incident category'
+    
+    allFields.forEach(field => {
+      if (field !== 'category') {
+        const error = validateField(field, formData[field as keyof FormData])
+        if (error) errors[field] = error
+      }
+    })
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setError('Please fix the errors above before submitting')
+      // Scroll to first error
+      const firstErrorField = document.querySelector('.input-error')
+      firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
 
@@ -162,6 +237,9 @@ export default function ReportPage() {
         }
       }
 
+      // Clean up object URLs
+      photoPreview.forEach(url => URL.revokeObjectURL(url))
+
       // Redirect to confirmation page
       router.push(`/report/success?ref=${referenceNumber}`)
     } catch (err: any) {
@@ -172,13 +250,13 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-page">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link
             href="/"
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 min-h-[44px]"
           >
             <ArrowLeft className="h-5 w-5" />
             <span>Back to Home</span>
@@ -186,14 +264,13 @@ export default function ReportPage() {
         </div>
       </header>
 
-      {/* Emergency Warning */}
-      <div className="bg-red-600 text-white">
+      {/* Emergency Warning - Compact */}
+      <div className="bg-emergency-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 flex-shrink-0" />
             <p className="font-semibold text-sm">
-              Important: This form is for non-emergency reports only. 
-              If you are in danger, call 911 immediately.
+              For emergencies, call 911 immediately. This form is for non-emergency reports only.
             </p>
           </div>
         </div>
@@ -201,21 +278,25 @@ export default function ReportPage() {
 
       {/* Form */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+        <div className="card-surface p-6 md:p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Report an Incident
           </h1>
           <p className="text-gray-600 mb-8">
-            Fill out this form to report a non-emergency incident to Bago City DRRMO.
+            Fill out this form to report a non-emergency incident to Bago City DRRMO. Fields marked with <span className="text-red-600">*</span> are required.
           </p>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
-              {error}
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-red-900">Please fix the following errors:</p>
+                <p className="text-red-800 text-sm">{error}</p>
+              </div>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Incident Category */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-3">
@@ -226,20 +307,32 @@ export default function ReportPage() {
                   <button
                     key={cat.value}
                     type="button"
-                    onClick={() =>
+                    onClick={() => {
                       setFormData((prev) => ({ ...prev, category: cat.value }))
-                    }
-                    className={`p-4 rounded-lg border-2 transition-all ${
+                      setTouchedFields(prev => new Set(prev).add('category'))
+                      setFieldErrors(prev => {
+                        const newErrors = { ...prev }
+                        delete newErrors.category
+                        return newErrors
+                      })
+                    }}
+                    className={`p-4 rounded-lg border-2 transition-all min-h-[88px] flex flex-col items-center justify-center ${
                       formData.category === cat.value
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                        ? 'border-action-600 bg-action-50'
+                        : 'border-gray-300 hover:border-gray-400'
+                    } ${touchedFields.has('category') && !formData.category ? 'border-red-500' : ''}`}
                   >
                     <div className="text-3xl mb-1">{cat.emoji}</div>
-                    <div className="text-sm font-medium">{cat.label}</div>
+                    <div className="text-sm font-medium text-center">{cat.label}</div>
                   </button>
                 ))}
               </div>
+              {touchedFields.has('category') && fieldErrors.category && (
+                <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  {fieldErrors.category}
+                </p>
+              )}
             </div>
 
             {/* Severity */}
@@ -255,13 +348,13 @@ export default function ReportPage() {
                     onClick={() =>
                       setFormData((prev) => ({ ...prev, severity: level.value }))
                     }
-                    className={`p-3 rounded-lg border-2 transition-all ${
+                    className={`p-3 rounded-lg border-2 transition-all min-h-[44px] ${
                       formData.severity === level.value
-                        ? `border-${level.color}-600 bg-${level.color}-50`
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? `${level.color} border-current`
+                        : 'border-gray-300 hover:border-gray-400 bg-white'
                     }`}
                   >
-                    <div className="text-sm font-medium">{level.label}</div>
+                    <div className="text-sm font-semibold">{level.label}</div>
                   </button>
                 ))}
               </div>
@@ -275,16 +368,29 @@ export default function ReportPage() {
               >
                 Short Title <span className="text-red-600">*</span>
               </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder="e.g., Fallen tree blocking road"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  onBlur={(e) => handleBlur('title', e.target.value)}
+                  placeholder="e.g., Fallen tree blocking road"
+                  className={`input-field ${
+                    touchedFields.has('title') && fieldErrors.title ? 'input-error' : ''
+                  } ${touchedFields.has('title') && !fieldErrors.title && formData.title ? 'border-green-500' : ''}`}
+                />
+                {touchedFields.has('title') && !fieldErrors.title && formData.title && (
+                  <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
+                )}
+              </div>
+              {touchedFields.has('title') && fieldErrors.title && (
+                <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  {fieldErrors.title}
+                </p>
+              )}
             </div>
 
             {/* Description */}
@@ -300,11 +406,24 @@ export default function ReportPage() {
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
+                onBlur={(e) => handleBlur('description', e.target.value)}
                 rows={4}
                 placeholder="Describe what happened, when it occurred, and any other relevant details..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                required
+                className={`input-field ${
+                  touchedFields.has('description') && fieldErrors.description ? 'input-error' : ''
+                } ${touchedFields.has('description') && !fieldErrors.description && formData.description ? 'border-green-500' : ''}`}
               />
+              <div className="flex items-center justify-between mt-1">
+                <div>
+                  {touchedFields.has('description') && fieldErrors.description && (
+                    <p className="text-red-600 text-sm flex items-center gap-1">
+                      <AlertTriangle className="h-4 w-4" />
+                      {fieldErrors.description}
+                    </p>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">{formData.description.length} characters</p>
+              </div>
             </div>
 
             {/* Location */}
@@ -316,16 +435,29 @@ export default function ReportPage() {
                 <MapPin className="h-4 w-4 inline mr-1" />
                 Location <span className="text-red-600">*</span>
               </label>
-              <input
-                type="text"
-                id="address_text"
-                name="address_text"
-                value={formData.address_text}
-                onChange={handleInputChange}
-                placeholder="e.g., Corner of Main St. and 2nd Ave, Poblacion"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  id="address_text"
+                  name="address_text"
+                  value={formData.address_text}
+                  onChange={handleInputChange}
+                  onBlur={(e) => handleBlur('address_text', e.target.value)}
+                  placeholder="e.g., Corner of Main St. and 2nd Ave, Poblacion"
+                  className={`input-field ${
+                    touchedFields.has('address_text') && fieldErrors.address_text ? 'input-error' : ''
+                  } ${touchedFields.has('address_text') && !fieldErrors.address_text && formData.address_text ? 'border-green-500' : ''}`}
+                />
+                {touchedFields.has('address_text') && !fieldErrors.address_text && formData.address_text && (
+                  <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
+                )}
+              </div>
+              {touchedFields.has('address_text') && fieldErrors.address_text && (
+                <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  {fieldErrors.address_text}
+                </p>
+              )}
             </div>
 
             {/* Barangay */}
@@ -343,47 +475,63 @@ export default function ReportPage() {
                 value={formData.barangay}
                 onChange={handleInputChange}
                 placeholder="e.g., Poblacion"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="input-field"
               />
             </div>
 
             {/* Photos */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 mb-3">
                 Photos (Optional, max 3)
               </label>
-              <div className="space-y-3">
-                {photos.map((photo, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <span className="text-sm text-gray-700">{photo.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handlePhotoRemove(index)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
-                {photos.length < 3 && (
-                  <label className="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
-                    <Upload className="h-5 w-5 text-gray-400 mr-2" />
-                    <span className="text-sm text-gray-600">
-                      Add Photo (max 5MB)
+              
+              {/* Photo Previews */}
+              {photoPreview.length > 0 && (
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  {photoPreview.map((preview, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handlePhotoRemove(index)}
+                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700 transition-colors shadow-lg"
+                        aria-label="Remove photo"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded truncate">
+                        {photos[index].name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload Button */}
+              {photos.length < 3 && (
+                <label className="flex items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-action-600 hover:bg-action-50 transition-all min-h-[88px]">
+                  <div className="text-center">
+                    <ImageIcon className="h-10 w-10 text-gray-400 mx-auto mb-2" />
+                    <span className="text-sm font-medium text-gray-700">
+                      Click to add photo
                     </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoAdd}
-                      className="hidden"
-                      multiple
-                    />
-                  </label>
-                )}
-              </div>
+                    <span className="text-xs text-gray-500 block mt-1">
+                      Max 5MB per photo • {3 - photos.length} remaining
+                    </span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoAdd}
+                    className="hidden"
+                    multiple
+                  />
+                </label>
+              )}
             </div>
 
             {/* Reporter Info */}
@@ -392,7 +540,7 @@ export default function ReportPage() {
                 Your Contact Information
               </h3>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
                   <label
                     htmlFor="reporter_name"
@@ -407,8 +555,11 @@ export default function ReportPage() {
                     value={formData.reporter_name}
                     onChange={handleInputChange}
                     placeholder="Optional - for follow-up purposes"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    className="input-field"
                   />
+                  <p className="text-sm text-gray-500 mt-1">
+                    You may remain anonymous. We'll only use your name if follow-up is needed.
+                  </p>
                 </div>
 
                 <div>
@@ -418,16 +569,32 @@ export default function ReportPage() {
                   >
                     Phone or Email <span className="text-red-600">*</span>
                   </label>
-                  <input
-                    type="text"
-                    id="reporter_contact"
-                    name="reporter_contact"
-                    value={formData.reporter_contact}
-                    onChange={handleInputChange}
-                    placeholder="e.g., +63 9XX XXX XXXX or email@example.com"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="reporter_contact"
+                      name="reporter_contact"
+                      value={formData.reporter_contact}
+                      onChange={handleInputChange}
+                      onBlur={(e) => handleBlur('reporter_contact', e.target.value)}
+                      placeholder="e.g., +63 9XX XXX XXXX or email@example.com"
+                      className={`input-field ${
+                        touchedFields.has('reporter_contact') && fieldErrors.reporter_contact ? 'input-error' : ''
+                      } ${touchedFields.has('reporter_contact') && !fieldErrors.reporter_contact && formData.reporter_contact ? 'border-green-500' : ''}`}
+                    />
+                    {touchedFields.has('reporter_contact') && !fieldErrors.reporter_contact && formData.reporter_contact && (
+                      <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
+                    )}
+                  </div>
+                  {touchedFields.has('reporter_contact') && fieldErrors.reporter_contact && (
+                    <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+                      <AlertTriangle className="h-4 w-4" />
+                      {fieldErrors.reporter_contact}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-500 mt-1">
+                    We'll use this to send your reference number and status updates.
+                  </p>
                 </div>
               </div>
             </div>
@@ -437,12 +604,22 @@ export default function ReportPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="btn-primary w-full"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Report'}
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting Report...
+                  </>
+                ) : (
+                  'Submit Report'
+                )}
               </button>
-              <p className="text-sm text-gray-600 text-center mt-3">
-                By submitting, you agree that the information provided is accurate.
+              <p className="text-sm text-gray-600 text-center mt-4">
+                By submitting, you confirm that the information provided is accurate to the best of your knowledge.
               </p>
             </div>
           </form>

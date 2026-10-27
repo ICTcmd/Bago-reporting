@@ -1,98 +1,125 @@
 'use client'
 
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle, Copy, Home, Search } from 'lucide-react'
-import { useState, Suspense } from 'react'
+import { CheckCircle, Copy, Home, Search, Check } from 'lucide-react'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
-  const referenceNumber = searchParams.get('ref') || 'UNKNOWN'
+  const referenceNumber = searchParams.get('ref') || ''
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(referenceNumber)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(referenceNumber)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = referenceNumber
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8 md:p-12">
-        {/* Success Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-green-100 rounded-full p-4">
-            <CheckCircle className="h-16 w-16 text-green-600" />
+    <div className="min-h-screen bg-page flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <div className="card-surface p-8 text-center">
+          {/* Success icon */}
+          <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+            <CheckCircle className="h-12 w-12 text-green-600" />
           </div>
-        </div>
 
-        {/* Heading */}
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-4">
-          Report Submitted Successfully!
-        </h1>
-        <p className="text-gray-600 text-center mb-8">
-          Your incident report has been received by Bago City DRRMO.
-        </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+            Report Submitted Successfully
+          </h1>
+          <p className="text-gray-600 mb-8">
+            Your incident report has been received by Bago City DRRMO. We'll review it and take appropriate action.
+          </p>
 
-        {/* Reference Number Box */}
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
-          <p className="text-sm text-gray-700 mb-2 text-center">Your Reference Number</p>
-          <div className="flex items-center justify-center space-x-3">
-            <code className="text-2xl md:text-3xl font-bold text-blue-600">
+          {/* Reference number - prominent */}
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
+            <p className="text-sm font-semibold text-gray-700 mb-2">Your Reference Number</p>
+            <p className="text-2xl md:text-3xl font-mono font-bold text-navy-600 mb-4 break-all">
               {referenceNumber}
-            </code>
+            </p>
             <button
               onClick={handleCopy}
-              className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-              title="Copy reference number"
+              className="btn-secondary w-full"
             >
-              <Copy className={`h-5 w-5 ${copied ? 'text-green-600' : 'text-gray-600'}`} />
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy to Clipboard
+                </>
+              )}
             </button>
           </div>
-          {copied && (
-            <p className="text-sm text-green-600 text-center mt-2">Copied!</p>
-          )}
-        </div>
 
-        {/* Important Info */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
-          <h3 className="font-semibold text-gray-900 mb-2">⚠️ Please Note:</h3>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li>• Save your reference number to track your report status</li>
-            <li>• DRRMO staff will review your report during office hours (M-F, 8 AM - 5 PM)</li>
-            <li>• This is NOT an emergency response system</li>
-            <li>• You will receive updates via the contact information you provided</li>
-            <li>• For emergencies, call 911 immediately</li>
-          </ul>
-        </div>
+          {/* Important note */}
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 mb-6 text-left">
+            <p className="text-sm text-yellow-900">
+              <strong className="font-bold">⚠️ Important:</strong> Save this reference number! You'll need it to track your report status.
+            </p>
+          </div>
 
-        {/* Action Buttons */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <Link
-            href={`/track?ref=${referenceNumber}`}
-            className="flex items-center justify-center space-x-2 bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Search className="h-5 w-5" />
-            <span>Track This Report</span>
-          </Link>
+          {/* What happens next */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+            <p className="font-semibold text-gray-900 mb-2">What happens next?</p>
+            <ul className="text-sm text-gray-600 space-y-1.5">
+              <li className="flex items-start">
+                <span className="text-green-600 mr-2">1.</span>
+                <span>DRRMO staff will review your report</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-green-600 mr-2">2.</span>
+                <span>We'll verify the incident details</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-green-600 mr-2">3.</span>
+                <span>Appropriate response will be coordinated</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-green-600 mr-2">4.</span>
+                <span>Track status updates using your reference number</span>
+              </li>
+            </ul>
+          </div>
 
-          <Link
-            href="/"
-            className="flex items-center justify-center space-x-2 bg-gray-100 text-gray-900 font-semibold py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <Home className="h-5 w-5" />
-            <span>Back to Home</span>
-          </Link>
-        </div>
+          {/* Actions */}
+          <div className="space-y-3">
+            <Link href={`/track?ref=${referenceNumber}`} className="btn-primary w-full">
+              <Search className="h-5 w-5 mr-2" />
+              Track This Report
+            </Link>
+            <Link href="/" className="btn-secondary w-full">
+              <Home className="h-5 w-5 mr-2" />
+              Back to Home
+            </Link>
+          </div>
 
-        {/* Contact Info */}
-        <div className="mt-8 pt-8 border-t text-center">
-          <p className="text-sm text-gray-600">
-            Questions about your report?
-          </p>
-          <p className="text-sm font-semibold text-gray-900 mt-1">
-            Call Bago City DRRMO: +63-xxx-xxx-xxxx
-          </p>
+          {/* Contact info */}
+          <div className="mt-6 pt-6 border-t text-sm text-gray-600">
+            <p>Questions about your report?</p>
+            <a 
+              href="tel:034-473-0043" 
+              className="text-action-600 hover:text-action-700 font-semibold hover:underline"
+            >
+              Call CDRRMC: (034) 473-0043
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -101,7 +128,16 @@ function SuccessContent() {
 
 export default function SuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense 
+      fallback={
+        <div className="min-h-screen bg-page flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      }
+    >
       <SuccessContent />
     </Suspense>
   )
