@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { AlertTriangle, MapPin, Phone, FileText, Shield, Search, Map } from 'lucide-react'
+import { AlertTriangle, MapPin, Phone, FileText, Shield, Search, Map, Users } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -60,8 +60,8 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Main Actions - 3 Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
+        {/* Main Actions - 4 Cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {/* Report Incident Card */}
           <Link
             href="/report"
@@ -73,7 +73,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Submit Report</h3>
               <p className="text-gray-600 mb-4">
-                Report flooding, fallen trees, road damage, or other incidents. No account required.
+                Report flooding, fallen trees, road damage, or other incidents.
               </p>
               <span className="text-action-600 font-semibold group-hover:underline">
                 Start Report →
@@ -96,6 +96,25 @@ export default function HomePage() {
               </p>
               <span className="text-green-600 font-semibold group-hover:underline">
                 Track Report →
+              </span>
+            </div>
+          </Link>
+
+          {/* Community Dashboard Card */}
+          <Link
+            href="/community"
+            className="card-surface p-8 hover:shadow-lg hover:border-purple-600 transition-all group"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="bg-purple-100 p-5 rounded-xl mb-4 group-hover:bg-purple-600 transition-colors">
+                <Users className="h-10 w-10 text-purple-600 group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Community Feed</h3>
+              <p className="text-gray-600 mb-4">
+                See what incidents others in the community have reported.
+              </p>
+              <span className="text-purple-600 font-semibold group-hover:underline">
+                View Dashboard →
               </span>
             </div>
           </Link>
