@@ -21,6 +21,14 @@ export default function HomePage() {
             </div>
             <nav className="flex items-center space-x-2">
               <Link
+                href="https://asenso-bago.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/90 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-white/10 min-h-[44px] flex items-center text-sm"
+              >
+                ← Main App
+              </Link>
+              <Link
                 href="/track"
                 className="text-white/90 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-white/10 min-h-[44px] flex items-center"
               >
