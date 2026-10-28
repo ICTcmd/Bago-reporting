@@ -9,7 +9,7 @@ import { LOCATION_CATEGORIES, get24x7Locations, EMERGENCY_LOCATIONS } from '@/li
 const EmergencyServicesMap = dynamic(() => import('@/components/EmergencyServicesMap'), {
   ssr: false,
   loading: () => (
-    <div className="h-[600px] w-full flex items-center justify-center bg-gray-100 rounded-xl">
+    <div className="h-[700px] w-full flex items-center justify-center bg-gray-100 rounded-xl">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-2"></div>
         <p className="text-gray-600">Loading map...</p>
@@ -141,7 +141,7 @@ export default function EmergencyMapPage() {
         <div className="card-surface p-4 mb-8">
           <EmergencyServicesMap 
             selectedCategories={selectedCategories}
-            height="600px"
+            height="700px"
           />
         </div>
 
