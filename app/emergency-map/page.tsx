@@ -67,21 +67,25 @@ export default function EmergencyMapPage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
-        <div className="text-center mb-8">
-          <h2 className="text-4xl font-extrabold text-gray-900 mb-3">
-            Emergency Services Locations
-          </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Find fire stations, hospitals, police stations, and emergency services across Bago City. 
-            Click on markers for contact information.
-          </p>
+      {/* Page Title - Full Width */}
+      <div className="bg-white border-b py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-3">
+              Emergency Services Locations
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Find fire stations, hospitals, police stations, and emergency services across Bago City. 
+              Click on markers for contact information.
+            </p>
+          </div>
         </div>
+      </div>
 
-        {/* Filter Bar */}
-        <div className="card-surface p-4 mb-6">
+      {/* Filter Bar - Full Width */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="card-surface p-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -136,16 +140,21 @@ export default function EmergencyMapPage() {
             </div>
           )}
         </div>
+      </div>
+      </div>
 
-        {/* Map Container */}
-        <div className="card-surface p-4 mb-8">
+      {/* FULL WIDTH MAP - No Container */}
+      <div className="w-full">
+        <div className="relative w-full" style={{ height: '75vh', minHeight: '600px' }}>
           <EmergencyServicesMap 
             selectedCategories={selectedCategories}
-            height="700px"
+            height="100%"
           />
         </div>
+      </div>
 
-        {/* Emergency Services List */}
+      {/* Emergency Services List - Back to Container */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Phone className="h-6 w-6 text-red-600" />
