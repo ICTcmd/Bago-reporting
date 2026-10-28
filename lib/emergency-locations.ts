@@ -25,7 +25,7 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
     id: 'fire-main',
     name: 'Fire Station Bago City',
     category: 'fire',
-    coordinates: [10.525734745570166, 122.8411452237024], // Exact verified location
+    coordinates: [10.525485867195068, 122.84119099241605], // UPDATED: Exact verified location
     address: 'Gen. Luna St, Bago City, Negros Occidental',
     barangay: 'Poblacion',
     phones: ['(034) 445-8332', '0939-424-8377'],
@@ -51,6 +51,20 @@ export const EMERGENCY_LOCATIONS: EmergencyLocation[] = [
   },
 
   // POLICE STATIONS
+  {
+    id: 'police-main',
+    name: 'Bago City Police Station',
+    category: 'police',
+    coordinates: [10.52586906990178, 122.84136834701181], // NEW: Main police station
+    address: 'Bago City, Negros Occidental',
+    barangay: 'Poblacion',
+    phones: ['(034) 471-1660'],
+    email: 'bccps01@gmail.com',
+    available: '24/7',
+    description: 'Main Bago City Police Station. Available 24/7 for law enforcement and emergencies.',
+    icon: '👮',
+    color: '#1e40af' // blue
+  },
   {
     id: 'police-maao',
     name: 'Ma-ao Police Station',
