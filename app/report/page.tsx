@@ -2,10 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, ArrowLeft, MapPin, Upload, X, CheckCircle, Image as ImageIcon } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, MapPin, Upload, X, CheckCircle, Image as ImageIcon, Map } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { generateReferenceNumber } from '@/lib/utils'
+import dynamic from 'next/dynamic'
+
+// Dynamically import LocationPicker to avoid SSR issues
+const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
+  ssr: false,
+  loading: () => <div className="text-center py-4">Loading map...</div>
+})
 
 interface FormData {
   category: string
@@ -62,6 +69,7 @@ export default function ReportPage() {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
 
   const validateField = (name: string, value: any): string => {
     switch (name) {
@@ -426,38 +434,60 @@ export default function ReportPage() {
               </div>
             </div>
 
-            {/* Location */}
+            {/* Location - Interactive Map Picker */}
             <div>
-              <label
-                htmlFor="address_text"
-                className="block text-sm font-semibold text-gray-900 mb-2"
-              >
+              <label className="block text-sm font-semibold text-gray-900 mb-3">
                 <MapPin className="h-4 w-4 inline mr-1" />
-                Location <span className="text-red-600">*</span>
+                Incident Location <span className="text-red-600">*</span>
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  id="address_text"
-                  name="address_text"
-                  value={formData.address_text}
-                  onChange={handleInputChange}
-                  onBlur={(e) => handleBlur('address_text', e.target.value)}
-                  placeholder="e.g., Corner of Main St. and 2nd Ave, Poblacion"
-                  className={`input-field ${
-                    touchedFields.has('address_text') && fieldErrors.address_text ? 'input-error' : ''
-                  } ${touchedFields.has('address_text') && !fieldErrors.address_text && formData.address_text ? 'border-green-500' : ''}`}
-                />
-                {touchedFields.has('address_text') && !fieldErrors.address_text && formData.address_text && (
-                  <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
-                )}
-              </div>
+              
+              {/* Map Pin Button */}
+              <button
+                type="button"
+                onClick={() => setShowLocationPicker(true)}
+                className="w-full p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all group"
+              >
+                <div className="flex items-center justify-center gap-3">
+                  <div className="bg-blue-100 group-hover:bg-blue-600 p-3 rounded-xl transition-colors">
+                    <Map className="h-8 w-8 text-blue-600 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 group-hover:text-blue-700">
+                      {formData.address_text ? 'Change Location' : 'Pin Location on Map'}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Click to open interactive map and mark exact location
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Selected Location Display */}
+              {formData.address_text && (
+                <div className="mt-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-green-900 text-sm mb-1">Location Selected:</p>
+                      <p className="text-sm text-green-800">{formData.address_text}</p>
+                      <p className="text-xs text-green-600 mt-1">
+                        📍 {formData.location_lat.toFixed(6)}, {formData.location_lng.toFixed(6)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {touchedFields.has('address_text') && fieldErrors.address_text && (
-                <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+                <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
                   <AlertTriangle className="h-4 w-4" />
                   {fieldErrors.address_text}
                 </p>
               )}
+              
+              <p className="text-sm text-gray-500 mt-2">
+                💡 <strong>Tip:</strong> Use the map to pinpoint the exact location of the incident for faster response
+              </p>
             </div>
 
             {/* Barangay */}
@@ -625,6 +655,29 @@ export default function ReportPage() {
           </form>
         </div>
       </main>
+
+      {/* Location Picker Modal */}
+      {showLocationPicker && (
+        <LocationPicker
+          initialLat={formData.location_lat}
+          initialLng={formData.location_lng}
+          onLocationChange={(lat, lng, address) => {
+            setFormData(prev => ({
+              ...prev,
+              location_lat: lat,
+              location_lng: lng,
+              address_text: address
+            }))
+            setTouchedFields(prev => new Set(prev).add('address_text'))
+            setFieldErrors(prev => {
+              const newErrors = { ...prev }
+              delete newErrors.address_text
+              return newErrors
+            })
+          }}
+          onClose={() => setShowLocationPicker(false)}
+        />
+      )}
     </div>
   )
 }
