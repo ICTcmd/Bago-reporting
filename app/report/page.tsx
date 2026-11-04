@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, ArrowLeft, MapPin, Upload, X, CheckCircle, Image as ImageIcon, Map } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, MapPin, Upload, X, CheckCircle, Image as ImageIcon, Map, Waves, Flame, Construction, TreeDeciduous, Home, Stethoscope, ShieldAlert, ClipboardList } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { generateReferenceNumber } from '@/lib/utils'
@@ -32,14 +32,14 @@ interface FieldErrors {
 }
 
 const INCIDENT_CATEGORIES = [
-  { value: 'flood', label: 'Flooding', emoji: '🌊' },
-  { value: 'fire', label: 'Fire', emoji: '🔥' },
-  { value: 'road_obstruction', label: 'Road Obstruction', emoji: '🚧' },
-  { value: 'fallen_tree', label: 'Fallen Tree', emoji: '🌳' },
-  { value: 'building_damage', label: 'Building Damage', emoji: '🏚️' },
-  { value: 'medical', label: 'Medical Emergency', emoji: '🏥' },
-  { value: 'crime', label: 'Crime/Security', emoji: '🚨' },
-  { value: 'other', label: 'Other', emoji: '📋' },
+  { value: 'flood', label: 'Flooding', icon: Waves, color: 'text-blue-600' },
+  { value: 'fire', label: 'Fire', icon: Flame, color: 'text-orange-600' },
+  { value: 'road_obstruction', label: 'Road Obstruction', icon: Construction, color: 'text-yellow-600' },
+  { value: 'fallen_tree', label: 'Fallen Tree', icon: TreeDeciduous, color: 'text-green-600' },
+  { value: 'building_damage', label: 'Building Damage', icon: Home, color: 'text-gray-700' },
+  { value: 'medical', label: 'Medical Emergency', icon: Stethoscope, color: 'text-red-600' },
+  { value: 'crime', label: 'Crime/Security', icon: ShieldAlert, color: 'text-red-700' },
+  { value: 'other', label: 'Other', icon: ClipboardList, color: 'text-gray-600' },
 ]
 
 const SEVERITY_LEVELS = [
@@ -311,29 +311,42 @@ export default function ReportPage() {
                 Incident Type <span className="text-red-600">*</span>
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {INCIDENT_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.value}
-                    type="button"
-                    onClick={() => {
-                      setFormData((prev) => ({ ...prev, category: cat.value }))
-                      setTouchedFields(prev => new Set(prev).add('category'))
-                      setFieldErrors(prev => {
-                        const newErrors = { ...prev }
-                        delete newErrors.category
-                        return newErrors
-                      })
-                    }}
-                    className={`p-4 rounded-lg border-2 transition-all min-h-[88px] flex flex-col items-center justify-center ${
-                      formData.category === cat.value
-                        ? 'border-action-600 bg-action-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                    } ${touchedFields.has('category') && !formData.category ? 'border-red-500' : ''}`}
-                  >
-                    <div className="text-3xl mb-1">{cat.emoji}</div>
-                    <div className="text-sm font-medium text-center">{cat.label}</div>
-                  </button>
-                ))}
+                {INCIDENT_CATEGORIES.map((cat) => {
+                  const IconComponent = cat.icon
+                  return (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({ ...prev, category: cat.value }))
+                        setTouchedFields(prev => new Set(prev).add('category'))
+                        setFieldErrors(prev => {
+                          const newErrors = { ...prev }
+                          delete newErrors.category
+                          return newErrors
+                        })
+                      }}
+                      className={`p-4 rounded-lg border-2 transition-all min-h-[100px] flex flex-col items-center justify-center gap-2 ${
+                        formData.category === cat.value
+                          ? 'border-action-600 bg-action-50 shadow-md'
+                          : 'border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                      } ${touchedFields.has('category') && !formData.category ? 'border-red-500' : ''}`}
+                    >
+                      <div className={`p-2 rounded-lg ${
+                        formData.category === cat.value 
+                          ? 'bg-action-100' 
+                          : 'bg-gray-100'
+                      }`}>
+                        <IconComponent className={`h-8 w-8 ${
+                          formData.category === cat.value 
+                            ? 'text-action-600' 
+                            : cat.color
+                        }`} />
+                      </div>
+                      <div className="text-sm font-semibold text-center">{cat.label}</div>
+                    </button>
+                  )
+                })}
               </div>
               {touchedFields.has('category') && fieldErrors.category && (
                 <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
