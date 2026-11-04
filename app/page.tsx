@@ -4,43 +4,60 @@ import { AlertTriangle, MapPin, Phone, FileText, Shield, Search, Map, Users } fr
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-page">
-      {/* Header */}
-      <header className="bg-navy-600 shadow-md sticky top-0 z-50">
-        <div className="page-container py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-white p-2 rounded-lg">
-                <Shield className="h-7 w-7 text-navy-600" />
+      {/* Header - Modern Clean Design */}
+      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo Section */}
+            <Link href="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
+              <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-3 rounded-2xl shadow-lg">
+                <Shield className="h-8 w-8 text-white" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight leading-tight">
                   Bago Safe
                 </h1>
-                <p className="text-xs text-white/80 font-medium">Incident Reporting System</p>
+                <p className="text-xs text-gray-500 font-medium tracking-wide">Incident Reporting System</p>
               </div>
-            </div>
-            <nav className="flex items-center space-x-2">
+            </Link>
+            
+            {/* Navigation - Desktop */}
+            <nav className="hidden md:flex items-center gap-2">
               <Link
                 href="https://asenso-bago.vercel.app"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white/90 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-white/10 min-h-[44px] flex items-center text-sm"
+                className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
               >
-                ← Main App
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Main App
               </Link>
               <Link
                 href="/track"
-                className="text-white/90 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-white/10 min-h-[44px] flex items-center"
+                className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
               >
+                <Search className="h-4 w-4" />
                 Track Report
               </Link>
               <Link
                 href="/login"
-                className="bg-white text-navy-600 px-6 py-2.5 rounded-lg hover:bg-white/90 transition-colors font-semibold min-h-[44px] flex items-center"
+                className="flex items-center gap-2 px-6 py-2.5 ml-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md hover:shadow-lg"
               >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
                 Staff Login
               </Link>
             </nav>
+            
+            {/* Mobile Menu Button */}
+            <button className="md:hidden p-3 hover:bg-gray-100 rounded-xl transition-colors active:scale-95">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
           </div>
         </div>
       </header>
