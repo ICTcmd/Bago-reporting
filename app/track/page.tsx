@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Search, MapPin, Clock, AlertCircle, Shield } from 'lucide-react'
+import { ArrowLeft, Search, MapPin, Clock, AlertCircle, Shield, FileText, Eye, CheckCircle, Settings, Lock, X, Copy } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { formatDate } from '@/lib/utils'
 
@@ -20,23 +20,25 @@ interface Incident {
 
 function StatusBadge({ status }: { status: string }) {
   const getStatusConfig = (status: string) => {
-    const configs: Record<string, { icon: string; label: string; color: string }> = {
-      submitted: { icon: '📝', label: 'Submitted', color: 'bg-gray-100 text-gray-800 border-gray-300' },
-      under_review: { icon: '👁️', label: 'Under Review', color: 'bg-blue-100 text-blue-800 border-blue-300' },
-      verified: { icon: '✓', label: 'Verified', color: 'bg-purple-100 text-purple-800 border-purple-300' },
-      in_progress: { icon: '⚙️', label: 'In Progress', color: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-      resolved: { icon: '✅', label: 'Resolved', color: 'bg-green-100 text-green-800 border-green-300' },
-      closed: { icon: '🔒', label: 'Closed', color: 'bg-gray-100 text-gray-600 border-gray-300' },
-      invalid: { icon: '❌', label: 'Invalid', color: 'bg-red-100 text-red-800 border-red-300' },
-      duplicate: { icon: '📋', label: 'Duplicate', color: 'bg-orange-100 text-orange-800 border-orange-300' },
+    const configs: Record<string, { IconComponent: any; label: string; color: string }> = {
+      submitted: { IconComponent: FileText, label: 'Submitted', color: 'bg-gray-100 text-gray-800 border-gray-300' },
+      under_review: { IconComponent: Eye, label: 'Under Review', color: 'bg-blue-100 text-blue-800 border-blue-300' },
+      verified: { IconComponent: CheckCircle, label: 'Verified', color: 'bg-purple-100 text-purple-800 border-purple-300' },
+      in_progress: { IconComponent: Settings, label: 'In Progress', color: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
+      resolved: { IconComponent: CheckCircle, label: 'Resolved', color: 'bg-green-100 text-green-800 border-green-300' },
+      closed: { IconComponent: Lock, label: 'Closed', color: 'bg-gray-100 text-gray-600 border-gray-300' },
+      invalid: { IconComponent: X, label: 'Invalid', color: 'bg-red-100 text-red-800 border-red-300' },
+      duplicate: { IconComponent: Copy, label: 'Duplicate', color: 'bg-orange-100 text-orange-800 border-orange-300' },
     }
     return configs[status] || configs.submitted
   }
 
   const config = getStatusConfig(status)
+  const IconComponent = config.IconComponent
+  
   return (
-    <span className={`status-badge border-2 ${config.color}`}>
-      <span aria-hidden="true">{config.icon}</span>
+    <span className={`status-badge border-2 ${config.color} flex items-center gap-1.5`}>
+      <IconComponent className="h-4 w-4" aria-hidden="true" />
       <span className="font-semibold">{config.label}</span>
     </span>
   )

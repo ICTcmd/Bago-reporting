@@ -483,8 +483,9 @@ export default function ReportPage() {
                     <div className="flex-1">
                       <p className="font-semibold text-green-900 text-sm mb-1">Location Selected:</p>
                       <p className="text-sm text-green-800">{formData.address_text}</p>
-                      <p className="text-xs text-green-600 mt-1">
-                        📍 {formData.location_lat.toFixed(6)}, {formData.location_lng.toFixed(6)}
+                      <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {formData.location_lat.toFixed(6)}, {formData.location_lng.toFixed(6)}
                       </p>
                     </div>
                   </div>
@@ -498,8 +499,9 @@ export default function ReportPage() {
                 </p>
               )}
               
-              <p className="text-sm text-gray-500 mt-2">
-                💡 <strong>Tip:</strong> Use the map to pinpoint the exact location of the incident for faster response
+              <p className="text-sm text-gray-500 mt-2 flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5 text-blue-600"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <span><strong>Tip:</strong> Use the map to pinpoint the exact location of the incident for faster response</span>
               </p>
             </div>
 
