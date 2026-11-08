@@ -52,9 +52,7 @@ export default function LocationPicker({
   onClose 
 }: LocationPickerProps) {
   // Default to Bago City center if no initial position
-  const bagoCity
-
-Center = {
+  const bagoCityCenter = {
     lat: 10.5380,
     lng: 122.8424
   }
