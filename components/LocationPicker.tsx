@@ -124,10 +124,10 @@ export default function LocationPicker({
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col" style={{ height: '600px' }}>
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="bg-white/20 p-2 rounded-lg">
               <MapPin className="h-6 w-6 text-white" />
@@ -146,11 +146,11 @@ export default function LocationPicker({
         </div>
 
         {/* Map Container */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative" style={{ minHeight: '400px' }}>
           <MapContainer
             center={position}
             zoom={14}
-            style={{ height: '100%', width: '100%' }}
+            style={{ height: '100%', width: '100%', minHeight: '400px' }}
             className="z-10"
           >
             <TileLayer
@@ -189,7 +189,7 @@ export default function LocationPicker({
         </div>
 
         {/* Footer Actions */}
-        <div className="bg-gray-50 px-6 py-4 border-t flex items-center justify-between gap-4">
+        <div className="bg-gray-50 px-6 py-4 border-t flex items-center justify-between gap-4 flex-shrink-0">
           <p className="text-sm text-gray-600">
             <span className="font-semibold">Tip:</span> Click anywhere on the map to move the pin
           </p>
