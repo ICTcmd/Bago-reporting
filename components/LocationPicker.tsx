@@ -51,7 +51,18 @@ export default function LocationPicker({
   onLocationChange,
   onClose 
 }: LocationPickerProps) {
-  const [position, setPosition] = useState<[number, number]>([initialLat, initialLng])
+  // Default to Bago City center if no initial position
+  const bagoCity
+
+Center = {
+    lat: 10.5380,
+    lng: 122.8424
+  }
+  
+  const [position, setPosition] = useState<[number, number]>([
+    initialLat || bagoCityCenter.lat,
+    initialLng || bagoCityCenter.lng
+  ])
   const [address, setAddress] = useState('Loading address...')
   const [isLoadingAddress, setIsLoadingAddress] = useState(false)
 
@@ -79,7 +90,7 @@ export default function LocationPicker({
 
   // Load initial address
   useEffect(() => {
-    reverseGeocode(initialLat, initialLng)
+    reverseGeocode(position[0], position[1])
   }, [])
 
   // Handle location selection
@@ -125,7 +136,7 @@ export default function LocationPicker({
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Pin Incident Location</h2>
-              <p className="text-sm text-blue-100">Click on the map to mark where the incident happened</p>
+              <p className="text-sm text-blue-100">Click anywhere on the map of Bago City to mark the incident location</p>
             </div>
           </div>
           <button 
@@ -140,7 +151,7 @@ export default function LocationPicker({
         <div className="flex-1 relative">
           <MapContainer
             center={position}
-            zoom={16}
+            zoom={14}
             style={{ height: '100%', width: '100%' }}
             className="z-10"
           >
