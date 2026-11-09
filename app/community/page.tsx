@@ -61,7 +61,7 @@ export default function CommunityDashboard() {
       // In production, you'd call track_incident_by_reference for each
       const { data, error } = await supabase
         .from('incidents')
-        .select('reference_number, category, severity, title, barangay, status, created_at')
+        .select('reference_number, category, severity, title, barangay, address_text, status, created_at')
         .order('created_at', { ascending: false })
         .limit(50)
 
@@ -72,7 +72,7 @@ export default function CommunityDashboard() {
         category: incident.category,
         severity: incident.severity,
         title: incident.title,
-        location_summary: incident.barangay ? `Barangay ${incident.barangay}` : 'Location withheld',
+        location_summary: incident.address_text || (incident.barangay ? `Barangay ${incident.barangay}` : 'Location not specified'),
         status: incident.status,
         created_at: incident.created_at,
       }))
@@ -343,7 +343,7 @@ export default function CommunityDashboard() {
 
                   {/* Privacy Notice */}
                   <div className="text-xs text-gray-500 italic">
-                    🔒 Exact location and reporter details withheld for privacy
+                    🔒 Reporter identity withheld for privacy
                   </div>
                 </div>
               )
