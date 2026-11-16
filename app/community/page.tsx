@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { Shield, Home, AlertCircle, MapPin, Clock, Filter, TrendingUp, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,26 @@ interface CommunityIncident {
   location_summary: string
   status: string
   created_at: string
+}
+
+// ── Client-side cache (shared in memory for the browser tab lifetime) ─────────
+// 100 users hitting the page within 30s = 1 DB query instead of 100
+const CACHE_TTL_MS = 30_000 // 30 seconds
+let cachedData: CommunityIncident[] | null = null
+let cacheTimestamp = 0
+
+function getCachedIncidents(): CommunityIncident[] | null {
+  if (!cachedData) return null
+  if (Date.now() - cacheTimestamp > CACHE_TTL_MS) {
+    cachedData = null // expired
+    return null
+  }
+  return cachedData
+}
+
+function setCachedIncidents(data: CommunityIncident[]) {
+  cachedData = data
+  cacheTimestamp = Date.now()
 }
 
 const CATEGORY_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
@@ -54,11 +74,20 @@ export default function CommunityDashboard() {
 
   const loadIncidents = async () => {
     try {
+      // ── Check cache first — avoids a DB hit if data is fresh ──────────────
+      const cached = getCachedIncidents()
+      if (cached) {
+        setIncidents(cached)
+        const total    = cached.length
+        const active   = cached.filter(i => ['submitted', 'under_review', 'verified', 'in_progress'].includes(i.status)).length
+        const resolved = cached.filter(i => ['resolved', 'closed'].includes(i.status)).length
+        setStats({ total, active, resolved })
+        setLoading(false)
+        return
+      }
+
+      // ── Cache miss — fetch from Supabase ──────────────────────────────────
       const supabase = createClient()
-      
-      // Call tracking function for each incident (public safe data only)
-      // For demo, we'll fetch from incidents table with limited fields
-      // In production, you'd call track_incident_by_reference for each
       const { data, error } = await supabase
         .from('incidents')
         .select('reference_number, category, severity, title, barangay, address_text, status, created_at')
@@ -69,25 +98,21 @@ export default function CommunityDashboard() {
 
       const communityIncidents: CommunityIncident[] = (data || []).map(incident => ({
         reference_number: incident.reference_number,
-        category: incident.category,
-        severity: incident.severity,
-        title: incident.title,
+        category:         incident.category,
+        severity:         incident.severity,
+        title:            incident.title,
         location_summary: incident.address_text || (incident.barangay ? `Barangay ${incident.barangay}` : 'Location not specified'),
-        status: incident.status,
-        created_at: incident.created_at,
+        status:           incident.status,
+        created_at:       incident.created_at,
       }))
 
+      // Store in cache for next 30 seconds
+      setCachedIncidents(communityIncidents)
       setIncidents(communityIncidents)
 
-      // Calculate stats
-      const total = communityIncidents.length
-      const active = communityIncidents.filter(i => 
-        ['submitted', 'under_review', 'verified', 'in_progress'].includes(i.status)
-      ).length
-      const resolved = communityIncidents.filter(i => 
-        ['resolved', 'closed'].includes(i.status)
-      ).length
-
+      const total    = communityIncidents.length
+      const active   = communityIncidents.filter(i => ['submitted', 'under_review', 'verified', 'in_progress'].includes(i.status)).length
+      const resolved = communityIncidents.filter(i => ['resolved', 'closed'].includes(i.status)).length
       setStats({ total, active, resolved })
     } catch (err) {
       console.error('Error loading incidents:', err)
