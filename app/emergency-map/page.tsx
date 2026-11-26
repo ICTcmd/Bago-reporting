@@ -177,7 +177,7 @@ export default function EmergencyMapPage() {
                         <a
                           key={idx}
                           href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
-                          className="block text-action-600 hover:text-action-700 font-semibold hover:underline text-sm min-h-[44px] flex items-center"
+                          className="text-action-600 hover:text-action-700 font-semibold hover:underline text-sm min-h-[44px] flex items-center"
                         >
                           📞 {phone}
                         </a>
