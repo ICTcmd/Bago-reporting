@@ -69,6 +69,7 @@ export default function ReportPage() {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [photoError, setPhotoError] = useState('')
   const [showLocationPicker, setShowLocationPicker] = useState(false)
 
   const validateField = (name: string, value: any): string => {
@@ -137,18 +138,19 @@ export default function ReportPage() {
     const files = Array.from(e.target.files || [])
     const validFiles: File[] = []
     const newPreviews: string[] = []
+    const errors: string[] = []
 
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
-        alert(`${file.name} is not an image file`)
+        errors.push(`${file.name} is not an image file.`)
         continue
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert(`${file.name} is too large (max 5MB)`)
+        errors.push(`${file.name} exceeds the 5MB size limit.`)
         continue
       }
       if (photos.length + validFiles.length >= 3) {
-        alert('Maximum 3 photos allowed')
+        errors.push('Maximum 3 photos allowed.')
         break
       }
       
@@ -156,6 +158,7 @@ export default function ReportPage() {
       newPreviews.push(URL.createObjectURL(file))
     }
 
+    setPhotoError(errors.join(' '))
     setPhotos((prev) => [...prev, ...validFiles])
     setPhotoPreview((prev) => [...prev, ...newPreviews])
     
@@ -576,6 +579,12 @@ export default function ReportPage() {
                     multiple
                   />
                 </label>
+              )}
+              {photoError && (
+                <p className="text-sm text-red-600 mt-2 flex items-center gap-1.5">
+                  <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                  <span>{photoError}</span>
+                </p>
               )}
             </div>
 
